@@ -1,8 +1,10 @@
+from typing import List, TYPE_CHECKING
 from app.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String
-from app.models.booking import Booking
-from typing import List
+
+if TYPE_CHECKING:
+    from app.models.booking import Booking
 
 class Resource(Base):
     __tablename__ = "resources"

@@ -15,3 +15,4 @@ def get_app() -> FastAPI:
 
     return app
 
+app = get_app()
