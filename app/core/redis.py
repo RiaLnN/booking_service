@@ -18,7 +18,7 @@ class RedisManager:
     
     async def close_pool(self) -> None:
         if self.pool:
-            await self.pool.disconnect()
+            await self.pool.aclose()
     
     def get_client(self) -> redis.Redis:
         if not self.pool:
