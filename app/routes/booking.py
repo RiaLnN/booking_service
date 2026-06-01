@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends
 from app.schemas.booking import BookingCreate, BookingResponse
 from typing import Annotated
 from app.models.user import User
-from app.routes.deps import get_session
+from app.routes.deps import get_session, get_redis
 from app.services.auth import get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services import booking as booking_service
 from typing import List
+from redis.asyncio import Redis
 
 router = APIRouter()
 
@@ -31,6 +32,7 @@ async def get_bookings(
 async def delete_book(
     book_id: int,
     user: Annotated[User, Depends(get_current_user)],
-    session: Annotated[AsyncSession, Depends(get_session)]
+    session: Annotated[AsyncSession, Depends(get_session)],
+    redis: Annotated[Redis, Depends(get_redis)]
 ):
-    await booking_service.delete_book(book_id=book_id, user=user, session=session)
+    await booking_service.delete_book(book_id=book_id, user=user, session=session, redis_session=redis)

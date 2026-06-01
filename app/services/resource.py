@@ -84,7 +84,7 @@ async def get_room_ocupation_timeline(
     res = [dict(row._mapping) for row in results.all()]
     validated_res = [Booking(**item) for item in res]
 
-    if validated_res:
+    if validated_res is not None:
         serializable_res = jsonable_encoder(validated_res)  
         await redis_session.set(cache_key, json.dumps(serializable_res), ex=3600)
 

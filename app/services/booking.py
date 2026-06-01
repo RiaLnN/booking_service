@@ -7,7 +7,7 @@ from app.models.user import User
 from fastapi import HTTPException, status
 from typing import List
 from app.models.resource import Resource
-
+from redis.asyncio import Redis
 
 async def create_book(
         data: BookingCreate,
@@ -61,7 +61,8 @@ async def get_books(
 async def delete_book(
         book_id: int,
         user: User,
-        session: AsyncSession
+        session: AsyncSession,
+        redis_session: Redis
 ):
     result = await session.execute(
         select(Booking)
@@ -75,6 +76,7 @@ async def delete_book(
     book = result.scalar_one_or_none()
     if book is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Books dont exist")
+    await redis_session.delete(f"resource:{book.resource_id}")
     
     await session.execute(
         delete(Booking)
