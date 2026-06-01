@@ -1,9 +1,18 @@
 services:
-  backed:
+  backend:
     build: .
+    restart: always
+    ports:
+      - "8080:8000"
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
   db:
     image: postgres:15-alpine
     environment:
@@ -11,12 +20,20 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
     volumes:
       - db-data:/var/lib/postgresql/data
+  redis:
+    image: redis/redis-stack-server:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
 
 volumes:
-  db-data: 
+  db-data:
+  redis-data:

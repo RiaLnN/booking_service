@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.database import get_session
+from app.routes.deps import get_session, get_redis
 from app.services.auth import get_current_user
 from app.services import resource as resource_service
 from app.schemas.resource import ResourceCreate, ResourceResponse, ResourceTimelineResponse
@@ -7,7 +7,7 @@ from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from typing import List
-
+from redis.asyncio import Redis
 router = APIRouter()
 
 @router.post("/", response_model=ResourceResponse)
@@ -39,7 +39,8 @@ async def delete_room(
 async def get_room_occupations_time(
     room_id: int,
     user: Annotated[User, Depends(get_current_user)],
-    session: Annotated[AsyncSession, Depends(get_session)]
+    session: Annotated[AsyncSession, Depends(get_session)],
+    redis_session: Annotated[Redis, Depends(get_redis)]
 ):
-    timeline = await resource_service.get_room_ocupation_timeline(room_id=room_id, user=user, session=session)
+    timeline = await resource_service.get_room_ocupation_timeline(room_id=room_id, user=user, session=session, redis_session=redis_session)
     return {"timeline": timeline}

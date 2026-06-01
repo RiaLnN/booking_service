@@ -1,4 +1,5 @@
-﻿aiosqlite==0.22.1
+﻿alembic
+aiosqlite==0.22.1
 annotated-doc==0.0.4
 annotated-types==0.7.0
 anyio==4.13.0
@@ -100,3 +101,5 @@ wcwidth==0.7.0
 webencodings==0.5.1
 websockets==16.0
 yarg==0.1.9
+asyncpg==0.31.0
+redis

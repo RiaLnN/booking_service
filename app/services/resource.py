@@ -2,11 +2,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.schemas.resource import ResourceCreate
 from app.models.user import User
 from app.models.resource import Resource
-from app.models.booking import Booking
+from app.models.booking import Booking as BookingModel
+from app.schemas.resource import Booking
 from typing import List
 from sqlalchemy import select, delete, and_
 from fastapi import HTTPException, status
-from datetime import datetime
+from datetime import datetime, timezone
+from redis.asyncio import Redis
+from fastapi.encoders import jsonable_encoder
+import json
+from typing import List
 
 async def create_room(
         data: ResourceCreate,
@@ -58,17 +63,29 @@ async def delete_room(
 async def get_room_ocupation_timeline(
         room_id: int,
         user: User,
-        session: AsyncSession
-):
+        session: AsyncSession,
+        redis_session: Redis
+) -> List[Booking]:
+    cache_key = f"resource:{room_id}"
+    timeline_raw = await redis_session.get(cache_key)
+    if timeline_raw:
+        cached_data = json.loads(timeline_raw)
+        return [Booking(**item) for item in cached_data]
+    
     results = await session.execute(
-        select(Booking.start_time, Booking.end_time)
+        select(BookingModel.start_time, BookingModel.end_time)
         .where(
             and_(
-                Booking.resource_id == room_id,
-                Booking.end_time > datetime.now()
+                BookingModel.resource_id == room_id,
+                BookingModel.end_time > datetime.now(timezone.utc)
             )
         )
     )
-    res = results.all()
-    print(res)
-    return res
+    res = [dict(row._mapping) for row in results.all()]
+    validated_res = [Booking(**item) for item in res]
+
+    if validated_res:
+        serializable_res = jsonable_encoder(validated_res)  
+        await redis_session.set(cache_key, json.dumps(serializable_res), ex=3600)
+
+    return validated_res

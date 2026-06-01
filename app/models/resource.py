@@ -1,5 +1,5 @@
 from typing import List, TYPE_CHECKING
-from app.database import Base
+from app.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Integer, String, Boolean
 from app.schemas.resource import RoomType

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field
 from enum import Enum
 from datetime import datetime
-from typing import Tuple, Optional
+from typing import List, Optional
 
 class RoomType(str, Enum):
     ROOM = "room"
@@ -23,4 +23,4 @@ class Booking(BaseModel):
     end_time: datetime
 
 class ResourceTimelineResponse(ResourceBase):
-    timeline: Optional[Tuple[Booking]]
+    timeline: Optional[List[Booking]]
