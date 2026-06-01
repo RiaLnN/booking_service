@@ -7,7 +7,7 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials
 from app.core import security
-from app.database import get_session
+from app.routes.deps import get_session
 import jwt
 
 async def user_exist(

@@ -1,14 +1,14 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from app.database import Base, engine
 from app.routes.api import router
 import app.models
+from app.core.redis import redis_manager
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    redis_manager.init_pool()
     yield
+    await redis_manager.close_pool()
 
 def get_app() -> FastAPI:
     app = FastAPI(lifespan=lifespan)

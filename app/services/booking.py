@@ -8,28 +8,6 @@ from fastapi import HTTPException, status
 from typing import List
 from app.models.resource import Resource
 
-async def book_busy(
-        data: BookingCreate,
-        session: AsyncSession
-) -> bool:
-    result = await session.execute(
-        select(Booking)
-        .where(
-            and_(
-                Booking.resource_id == data.resource_id,
-                data.start_time < Booking.end_time,
-                data.end_time > Booking.start_time
-            )
-        )
-        .options(joinedload(Booking.resource))
-        .with_for_update()
-    )
-    book = result.scalar_one_or_none()
-    
-    if book is not None and book.resource.is_active:
-        return True
-    
-    return False
 
 async def create_book(
         data: BookingCreate,

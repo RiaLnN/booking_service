@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from app.schemas.booking import BookingCreate, BookingResponse
 from typing import Annotated
 from app.models.user import User
-from app.database import get_session
+from app.routes.deps import get_session
 from app.services.auth import get_current_user
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services import booking as booking_service
