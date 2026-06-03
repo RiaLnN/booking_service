@@ -1,6 +1,17 @@
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    restart: always
+    depends_on:
+      - backend
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
     restart: always
     ports:
       - "8080:8000"

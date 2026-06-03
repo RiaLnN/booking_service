@@ -1,0 +1,52 @@
+/* ════════════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════════════ */
+.main-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+}
+
+.footer-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-copy {
+  font-size: 0.78rem;
+  color: var(--text-3);
+  font-family: var(--font-mono);
+}
+
+.footer-copy strong {
+  color: var(--text-2);
+  font-weight: 500;
+}
+
+.footer-stack {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  color: var(--text-3);
+  transition: var(--transition);
+}
+
+.footer-badge:hover {
+  color: var(--text-2);
+  border-color: var(--border-strong);
+}

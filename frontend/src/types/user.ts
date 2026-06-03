@@ -1,6 +1,6 @@
 
 
-export interface UserCreate {
+export interface UserRegister {
     username: string,
     email: string,
     password: string
@@ -9,4 +9,12 @@ export interface UserCreate {
 export interface UserLogin {
     email: string,
     password: string
+}
+
+export interface UserResponse {
+    user: {
+        id: number,
+        username: string
+    },
+    token: string
 }

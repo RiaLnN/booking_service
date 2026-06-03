@@ -1,10 +1,14 @@
 import apiClient from "../instance";
-import type { Slot } from "../../types/booking";
+import type { BookCreate, BookResponse } from "../../types/booking";
 import { ROUTES } from "../config";
 
-export const SlotsService = {
+export const BookingService = {
     list: async (room_id: number) => {
-        const { data } = await apiClient.get<Slot[]>(ROUTES.slotList(room_id))
-        return data
+        const { data }  = await apiClient.get<BookResponse[]>(ROUTES.slotList(room_id));
+        return data;
+    },
+    book: async (dataIn: BookCreate) => {
+        const { data } = await apiClient.post<BookResponse>(ROUTES.book(), dataIn);
+        return data;
     }
 }

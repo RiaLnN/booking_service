@@ -11,13 +11,14 @@ from redis.asyncio import Redis
 
 router = APIRouter()
 
-@router.post("/", response_model=BookingResponse)
+@router.post("", response_model=BookingResponse)
 async def booking_room(
     data: BookingCreate,
     user: Annotated[User, Depends(get_current_user)],
-    session: Annotated[AsyncSession, Depends(get_session)]
+    session: Annotated[AsyncSession, Depends(get_session)],
+    redis_session: Annotated[Redis, Depends(get_redis)]
 ):
-    book = await booking_service.create_book(data=data, user=user, session=session)
+    book = await booking_service.create_book(data=data, user=user, session=session, redis_session=redis_session)
     return book
 
 @router.get("/my", response_model=List[BookingResponse])

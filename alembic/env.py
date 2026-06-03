@@ -19,7 +19,7 @@ docker_db_url = os.getenv("DATABASE_URL")
 if docker_db_url:
     config.set_main_option("sqlalchemy.url", docker_db_url)
 else:
-    from app.core.config import settings
+    from backend.core.config import settings
     config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
 if config.config_file_name is not None:
@@ -29,8 +29,8 @@ if config.config_file_name is not None:
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from app.models.base import Base
-from app.models import User, Booking, Resource
+from backend.models.base import Base
+from backend.models import User, Booking, Resource
 
 target_metadata = Base.metadata
 
