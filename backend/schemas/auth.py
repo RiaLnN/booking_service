@@ -15,8 +15,6 @@ class UserLogin(UserBase):
 class User(UserBase):
     id: int
     username: str
-    email: EmailStr
-    hashed_password: str
 
 class UserResponse(UserBase):
     user: User

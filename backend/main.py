@@ -18,4 +18,4 @@ def get_app() -> FastAPI:
     
     return app
 
-backend = get_app()
+app = get_app()
