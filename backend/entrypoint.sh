@@ -3,6 +3,7 @@
 set -e
 
 echo "Running database migrations..."
+alembic revision --autogenerate -m "init table"
 alembic upgrade head
 
 echo "Starting Uvicorn server..."

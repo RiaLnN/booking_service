@@ -5,22 +5,20 @@ from backend.models.resource import Resource
 from backend.models.booking import Booking as BookingModel
 from backend.schemas.resource import Booking
 from typing import List
-from sqlalchemy import select, delete, and_
+from sqlalchemy import select, delete, and_, cast, Date
 from fastapi import HTTPException, status
-from datetime import datetime, timezone
 from redis.asyncio import Redis
 from fastapi.encoders import jsonable_encoder
 import json
 from typing import List
+from backend.helpers.cache import get_resource_cache_key, clear_room_timeline_cache
+from datetime import date
 
 async def create_room(
         data: ResourceCreate,
         user: User,
         session: AsyncSession
 ) -> Resource:
-    
-    # TODO: check user.is_admin
-
     new_room = Resource(**data.model_dump())
     
     session.add(new_room)
@@ -33,9 +31,6 @@ async def get_rooms(
         user: User,
         session: AsyncSession
 ) -> List[Resource]:
-    
-    # TODO: check user.is_admin
-
     rooms = await session.execute(
         select(Resource)
     )
@@ -45,39 +40,40 @@ async def get_rooms(
 async def delete_room(
         room_id: int,
         user: User,
-        session: AsyncSession
+        session: AsyncSession,
+        redis_session: Redis
 ):
-    
-    # TODO: check user.is_admin
-
     try:
         await session.execute(
             delete(Resource)
             .where(Resource.id == room_id)
         )
         await session.commit()
+        await clear_room_timeline_cache(room_id=room_id, redis_session=redis_session)
     except:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Room don't exist")
     
 
 async def get_room_ocupation_timeline(
         room_id: int,
+        date: date,
         user: User,
         session: AsyncSession,
         redis_session: Redis
 ) -> List[Booking]:
-    cache_key = f"resource:{room_id}"
+    cache_key = get_resource_cache_key(room_id, date)
     timeline_raw = await redis_session.get(cache_key)
     if timeline_raw:
         cached_data = json.loads(timeline_raw)
         return [Booking(**item) for item in cached_data]
     
     results = await session.execute(
-        select(BookingModel.id, BookingModel.start_time, BookingModel.end_time)
+        select(BookingModel.id, BookingModel.start_time, BookingModel.end_time, BookingModel.is_booked)
         .where(
             and_(
                 BookingModel.resource_id == room_id,
-                BookingModel.end_time > datetime.now(timezone.utc)
+                cast(BookingModel.start_time, Date) <= date,
+                cast(BookingModel.end_time, Date) >= date
             )
         )
     )

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, List
 from backend.models.base import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Boolean
 
 if TYPE_CHECKING:
     from backend.models.booking import Booking
@@ -13,6 +13,7 @@ class User(Base):
     username: Mapped[str] = mapped_column(String, default="user")
     email: Mapped[str] = mapped_column(String, unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
 
     bookings: Mapped[List["Booking"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 

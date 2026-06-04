@@ -1,22 +1,20 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_, delete
 from backend.models.booking import Booking as BookingModel
-import json
 from backend.schemas.booking import BookingCreate
 from backend.models.user import User
 from fastapi import HTTPException, status
 from typing import List
 from backend.models.resource import Resource
 from redis.asyncio import Redis
-from fastapi.encoders import jsonable_encoder
-from backend.schemas.resource import Booking
+from backend.helpers.cache import get_resource_cache_key, clear_room_timeline_cache
 
 async def create_book(
         data: BookingCreate,
-        user: User,
         session: AsyncSession,
         redis_session: Redis
 ) -> BookingModel:
+    
     resource_result = await session.execute(
         select(Resource)
         .where(Resource.id == data.resource_id)
@@ -44,14 +42,43 @@ async def create_book(
     if existing_book is not None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This timeslot is already booked")
     
-    new_book = BookingModel(**data.model_dump(), user_id=user.id)
+    new_book = BookingModel(**data.model_dump())
     session.add(new_book)
     await session.commit()
     await session.refresh(new_book)
-    cache_key = f"resource:{data.resource_id}"
-    await redis_session.delete(cache_key)
+    await clear_room_timeline_cache(new_book.resource_id, redis_session)
 
     return new_book
+
+async def occupate_room(
+        book_id: int,
+        user: User,
+        session: AsyncSession,
+        redis_session: Redis
+) -> BookingModel:
+    res = await session.execute(
+        select(BookingModel)
+        .where(
+            and_ (
+                BookingModel.id == book_id,
+                BookingModel.is_booked == False
+            )
+        )
+        .with_for_update()
+    )
+    book = res.scalar_one_or_none()
+    if not book:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This timeslot is already booked")
+    
+    book.is_booked = True
+    book.user_id = user.id
+    await session.commit()
+    await session.refresh(book)
+    await clear_room_timeline_cache(book.resource_id, redis_session)
+    return book
+
+
+
 
 async def get_books(
         user: User,
@@ -90,4 +117,4 @@ async def delete_book(
     )
     await session.commit()
     
-    await redis_session.delete(f"resource:{resource_id}")
+    await clear_room_timeline_cache(resource_id, redis_session)
