@@ -6,6 +6,7 @@ from backend.models.booking import Booking as BookingModel
 from backend.schemas.resource import Booking
 from typing import List
 from sqlalchemy import select, delete, and_, cast, Date
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException, status
 from redis.asyncio import Redis
 from fastapi.encoders import jsonable_encoder
@@ -38,26 +39,38 @@ async def get_rooms(
     return list(rooms.scalars().all())
 
 async def delete_room(
-        room_id: int,
-        user: User,
-        session: AsyncSession,
-        redis_session: Redis
+    room_id: int,
+    session: AsyncSession,
+    redis_session: Redis
 ):
     try:
-        await session.execute(
-            delete(Resource)
-            .where(Resource.id == room_id)
+        result = await session.execute(
+            select(Resource).where(Resource.id == room_id)
         )
+        resource = result.scalar_one_or_none()
+
+        if not resource:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, 
+                detail="Room not found"
+            )
+
+        await session.delete(resource)
         await session.commit()
         await clear_room_timeline_cache(room_id=room_id, redis_session=redis_session)
-    except:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Room don't exist")
-    
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail="Internal server error"
+        )
 
 async def get_room_ocupation_timeline(
         room_id: int,
         date: date,
-        user: User,
         session: AsyncSession,
         redis_session: Redis
 ) -> List[Booking]:

@@ -46,7 +46,6 @@ async def delete_room(
 ):
     await resource_service.delete_room(
         room_id=room_id, 
-        user=user, 
         session=session, 
         redis_session=redis_session
     )
@@ -62,7 +61,6 @@ async def get_room_occupations_time(
     timeline = await resource_service.get_room_ocupation_timeline(
         room_id=room_id, 
         date=date, 
-        user=user, 
         session=session, 
         redis_session=redis_session
     )

@@ -16,6 +16,7 @@ class UserLogin(UserBase):
 class User(UserBase):
     id: int
     username: str
+    is_admin: bool
 
 class UserResponse(UserBase):
     user: User

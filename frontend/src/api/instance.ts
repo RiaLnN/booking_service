@@ -25,7 +25,7 @@ apiClient.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            Store.updateStore = { user: { id: 0, username: '' }, token: '' };
+            Store.updateStore = { user: { id: 0, username: '', is_admin: false }, token: '' };
         }
         return Promise.reject(error);
     }
