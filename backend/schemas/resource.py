@@ -22,6 +22,7 @@ class Booking(BaseModel):
     id: int
     start_time: datetime
     end_time: datetime
+    is_booked: bool
 
 class ResourceTimelineResponse(ResourceBase):
     timeline: Optional[List[Booking]]
