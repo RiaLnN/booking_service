@@ -3,6 +3,7 @@ import { getRoomsScreen } from "./layout/rooms";
 import { getDashboard } from "./layout/dashboard";
 import { getFooter } from "./layout/footer";
 import { initAuthModal } from "./layout/auth";
+import { getAdminPanel } from "./layout/admin";
 import { Store } from "./store";
 
 async function renderApp() {
@@ -10,30 +11,34 @@ async function renderApp() {
     if (!app) return;
 
     const existingModal = document.getElementById('auth-modal-overlay');
-
     app.innerHTML = '';
-
     app.appendChild(getHeader(() => renderApp()));
 
-    if (Store.currentRoomId === 0) {
-        const roomsScreen = await getRoomsScreen((id: number) => {
+    const view = Store.currentView;
+
+    if (view === 'admin' && Store.isAdmin) {
+        app.appendChild(getAdminPanel(() => {
+            Store.currentView = 'rooms';
+            renderApp();
+        }));
+    } else if (Store.currentRoomId === 0) {
+        const rooms = await getRoomsScreen(id => {
             Store.currentRoomId = id;
             renderApp();
         });
-        app.appendChild(roomsScreen);
+        app.appendChild(rooms);
     } else {
-        const dashboardScreen = await getDashboard(Store.currentRoomId, () => {
+        const dash = await getDashboard(Store.currentRoomId, () => {
             Store.currentRoomId = 0;
             renderApp();
         });
-        app.appendChild(dashboardScreen);
+        app.appendChild(dash);
     }
 
     app.appendChild(getFooter());
 
     if (!existingModal) {
-        const authModal = initAuthModal(() => renderApp());
-        document.body.appendChild(authModal);
+        document.body.appendChild(initAuthModal(() => renderApp()));
     } else {
         document.body.appendChild(existingModal);
     }

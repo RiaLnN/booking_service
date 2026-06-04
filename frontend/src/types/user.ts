@@ -14,7 +14,8 @@ export interface UserLogin {
 export interface UserResponse {
     user: {
         id: number,
-        username: string
+        username: string,
+        is_admin: boolean
     },
     token: string
 }

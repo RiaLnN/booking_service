@@ -1,14 +1,25 @@
 import apiClient from "../instance";
-import type { BookCreate, BookResponse } from "../../types/booking";
 import { ROUTES } from "../config";
+import type { BookResponse, BookCreate } from "../../types/booking";
 
 export const BookingService = {
-    list: async (room_id: number) => {
-        const { data }  = await apiClient.get<BookResponse[]>(ROUTES.slotList(room_id));
+    list: async (roomId: number): Promise<BookResponse[]> => {
+        const { data } = await apiClient.get<{ timeline: BookResponse[] }>(ROUTES.roomTimeline(roomId));
+        return data.timeline ?? [];
+    },
+    occupy: async (bookId: number): Promise<BookResponse> => {
+        const { data } = await apiClient.patch<BookResponse>(ROUTES.bookOccupy(bookId));
         return data;
     },
-    book: async (dataIn: BookCreate) => {
-        const { data } = await apiClient.post<BookResponse>(ROUTES.book(), dataIn);
+    create: async (payload: BookCreate): Promise<BookResponse> => {
+        const { data } = await apiClient.post<BookResponse>(ROUTES.bookCreate(), payload);
         return data;
-    }
-}
+    },
+    my: async (): Promise<BookResponse[]> => {
+        const { data } = await apiClient.get<BookResponse[]>(ROUTES.bookMy());
+        return data;
+    },
+    remove: async (bookId: number): Promise<void> => {
+        await apiClient.delete(ROUTES.bookDelete(bookId));
+    },
+};

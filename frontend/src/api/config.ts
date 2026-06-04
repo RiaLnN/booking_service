@@ -1,7 +1,14 @@
 export const ROUTES = {
-    resiter: () => `/auth/register`,
+    register: () => `/auth/register`,
     login: () => `/auth/login`,
-    slotList: (room_id: number) => `/resources/${room_id}/date`,
     roomList: () => `/resources`,
-    book: () => `/booking/book`
-}
+    roomCreate: () => `/resources`,
+    roomDelete: (id: number) => `/resources/${id}`,
+    roomTimeline: (id: number, date?: string) => date
+        ? `/resources/${id}/date?date=${date}`
+        : `/resources/${id}/date`,
+    bookCreate: () => `/booking/create`,
+    bookOccupy: (id: number) => `/booking/${id}`,
+    bookMy: () => `/booking/my`,
+    bookDelete: (id: number) => `/booking/${id}`,
+};

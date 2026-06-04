@@ -5,7 +5,7 @@ import { Store } from "../../store";
 
 export const AuthService = {
     register: async (dataIn: UserRegister) => {
-        const { data } = await apiClient.post<UserResponse>(ROUTES.resiter(), dataIn);
+        const { data } = await apiClient.post<UserResponse>(ROUTES.register(), dataIn);
         Store.updateStore = data;
         return data;
     },

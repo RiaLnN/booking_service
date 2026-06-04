@@ -6,8 +6,12 @@ export interface BookResponse {
     is_booked: boolean
 }
 
+export interface BookOccupate {
+    id: number
+}
+
 export interface BookCreate {
-    start_time: string,
-    end_time: string,
+    start_time: string
+    end_time: string
     resource_id: number
 }

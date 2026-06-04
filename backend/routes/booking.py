@@ -26,13 +26,13 @@ async def create_book(
     return book
 
 @router.patch("/{book_id}", response_model=BookingResponse)
-async def occupate_room(
+async def change_room_state(
     book_id: int,
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
     redis_session: Annotated[Redis, Depends(get_redis)]
 ):
-    book = await booking_service.occupate_room(
+    book = await booking_service.change_room_state(
         book_id=book_id,
         user=user,
         session=session,
@@ -54,13 +54,12 @@ async def get_bookings(
 @router.delete("/{book_id}")
 async def delete_book(
     book_id: int,
-    user: Annotated[User, Depends(get_current_user)],
+    user: Annotated[User, Depends(get_admin_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
     redis: Annotated[Redis, Depends(get_redis)]
 ):
     await booking_service.delete_book(
         book_id=book_id, 
-        user=user, 
         session=session, 
         redis_session=redis
     )

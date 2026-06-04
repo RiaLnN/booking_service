@@ -50,7 +50,7 @@ async def create_book(
 
     return new_book
 
-async def occupate_room(
+async def change_room_state(
         book_id: int,
         user: User,
         session: AsyncSession,
@@ -77,9 +77,6 @@ async def occupate_room(
     await clear_room_timeline_cache(book.resource_id, redis_session)
     return book
 
-
-
-
 async def get_books(
         user: User,
         session: AsyncSession
@@ -92,29 +89,28 @@ async def get_books(
 
 async def delete_book(
     book_id: int,
-    user: User,
     session: AsyncSession,
     redis_session: Redis
 ):
-    result = await session.execute(
-        select(BookingModel)
-        .where(
-            and_(
-                BookingModel.id == book_id,
-                BookingModel.user_id == user.id
-            )
+    try:
+        result = await session.execute(
+            select(BookingModel)
+            .where(BookingModel.id == book_id)
         )
-    )
-    book = result.scalar_one_or_none()
-    if book is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Book does not exist")
-    
-    resource_id = book.resource_id 
+        book = result.scalar_one_or_none()
+        if book is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
+        
+        resource_id = book.resource_id 
 
-    await session.execute(
-        delete(BookingModel)
-        .where(BookingModel.id == book_id)
-    )
-    await session.commit()
-    
-    await clear_room_timeline_cache(resource_id, redis_session)
+        await session.delete(book)
+        await session.commit()
+        await clear_room_timeline_cache(room_id=resource_id, redis_session=redis_session)
+    except HTTPException:
+        raise
+    except Exception as e:
+        await session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
+            detail="Internal server error"
+        )
